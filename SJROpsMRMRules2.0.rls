@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 7.2.7 Patch
-# Created 11:25 November 9, 2018
+# Created 09:57 November 16, 2018
 # 
 RULESET
 NAME "RBS Ruleset   (from MRM run)";
@@ -1099,7 +1099,7 @@ BEGIN
   BEGIN
 
     RULE                 "Set Local Inflows";
-    DESCRIPTION          "Daily gainloss is a calculated gage-to-gage statistical loss. Choose statistical for entire model run in SWITCHES object. <br>Local inflows will never make river go less than 0. This is recorded in the reach &quot;unidentified loss&quot;.<br>";
+    DESCRIPTION          "Daily gainloss is a calculated gage-to-gage statistical loss. Choose statistical for entire model run in SWITCHES object. <br>Local inflows will never make river go less than 0. This is recorded in the reach &quot;unidentified loss&quot;.<br>Yes.<br>";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
     NOTES                "";
