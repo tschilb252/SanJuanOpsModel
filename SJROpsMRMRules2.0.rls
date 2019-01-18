@@ -1,8 +1,8 @@
 # RiverWare_Ruleset 7.2.7 Patch
-# Created 09:57 November 16, 2018
+# Created 10:03 January 10, 2019
 # 
 RULESET
-NAME "RBS Ruleset   (from MRM run)";
+NAME "RBS Ruleset   (from MRM run) (from MRM run) (from MRM run) (from MRM run) (from MRM run) (from MRM run)";
 AGENDA_ORDER ASCENDING;
 DESCRIPTION "The way the spike and TBF overage rules are written, the EOWYST is reached at some point between Sept 1 and Sept 30. In low hydrologic years, the EOWYST will be reached slightly earlier in that month.     ";
 PRECISION   2;
@@ -308,6 +308,21 @@ BEGIN
       $ "NavajoData.Cycle3SpringPeakRelease" [] := IF ( "SpringPeakReleaseSeason"(  ) )
  THEN
   $ "NavajoData.SPRTable_SET" [@"t", $ "NavajoData.Cycle3MaxDaysAtPeak" [@"t"]]
+ ENDIF;
+
+    END;
+
+    RULE                 "Manual Maintenance Release";
+    DESCRIPTION          "When SPR has begun (when very close to SPR time) , the SPR must be manually input here-- this rule should be turned off and the SPR being used should be input into the &quot;NavajoData.KnownReleasePattern&quot; slot.";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" );
+  NAMES_COLOR  "#ff0000";
+    NOTES                "";
+    BEGIN
+
+      $ "Navajo Reservoir.Release" [] := IF ( NOT IsNaN $ "NavajoData.ManualMaintenanceRelease" [] )
+ THEN
+  $ "NavajoData.ManualMaintenanceRelease" []
  ENDIF;
 
     END;
@@ -1183,7 +1198,7 @@ BEGIN
 
     RULE                 "Calc NIIP Diversions";
     DESCRIPTION          "This rule takes the daily forecasted NIIP diversion (in af) and further scales it by multiplying it by (forecast remaining/observed remaining), so that the total CY volume adds up to NAPI's annual estimates.";
-    ACTIVE               TRUE;
+    ACTIVE               FALSE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
     NOTES                "";
     BEGIN
@@ -1194,6 +1209,17 @@ BEGIN
  ELSE
   $ "NIIP.DailyForecastVol" []
  ENDIF;
+
+    END;
+
+    RULE                 "Calc NIIP Diversions_NoAdjustment";
+    DESCRIPTION          "This rule takes the daily forecasted NIIP diversion (in af) and further scales it by multiplying it by (forecast remaining/observed remaining), so that the total CY volume adds up to NAPI's annual estimates.";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
+    NOTES                "";
+    BEGIN
+
+      $ "NIIP.DailyForecastVol Adjusted" [] := $ "NIIP.DailyForecastVol" [];
 
     END;
 
@@ -1212,7 +1238,7 @@ BEGIN
 
   POLICY_GROUP   "1 Cycle - OFFICIAL INFLOW FORECASTS";
   DESCRIPTION    "";
-  ACTIVE         TRUE;
+  ACTIVE         FALSE;
   NAMES_COLOR  "#ffaa00";
   NOTES          "";
   BEGIN
@@ -1355,7 +1381,7 @@ BEGIN
 
   POLICY_GROUP   "1 Cycle - MRM INFLOW FORECASTS";
   DESCRIPTION    "";
-  ACTIVE         FALSE;
+  ACTIVE         TRUE;
   NAMES_COLOR  "#ffaa00";
   NOTES          "";
   BEGIN
