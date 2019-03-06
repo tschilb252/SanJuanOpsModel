@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 7.4.2 Patch
-# Created 14:25 March 6, 2019
+# Created 15:18 March 6, 2019
 # 
 RULESET
 NAME "RBS Ruleset   (from MRM run) (from MRM run) (from MRM run) (from MRM run) (from MRM run) (from MRM run) (from MRM run) (from MRM run) (from MRM run)";
@@ -1214,7 +1214,7 @@ BEGIN
 
     RULE                 "Calc NIIP Diversions";
     DESCRIPTION          "This rule takes the daily forecasted NIIP diversion (in af) and further scales it by multiplying it by (forecast remaining/observed remaining), so that the total CY volume adds up to NAPI's annual estimates.";
-    ACTIVE               FALSE;
+    ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
     NOTES                "";
     BEGIN
@@ -1228,9 +1228,9 @@ BEGIN
 
     END;
 
-    RULE                 "Calc NIIP Diversions_NoAdjustment";
-    DESCRIPTION          "This rule takes the daily forecasted NIIP diversion (in af) and further scales it by multiplying it by (forecast remaining/observed remaining), so that the total CY volume adds up to NAPI's annual estimates.";
-    ACTIVE               TRUE;
+    RULE                 "Calc NIIP Diversions_(January)";
+    DESCRIPTION          "If you're in January or sometimes February, you need to use this rule instead of the normal NIIP adjustment rule. ";
+    ACTIVE               FALSE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
     NOTES                "";
     BEGIN
@@ -1254,7 +1254,7 @@ BEGIN
 
   POLICY_GROUP   "1 Cycle - OFFICIAL INFLOW FORECASTS";
   DESCRIPTION    "";
-  ACTIVE         FALSE;
+  ACTIVE         TRUE;
   NAMES_COLOR  "#ffaa00";
   NOTES          "";
   BEGIN
@@ -1397,7 +1397,7 @@ BEGIN
 
   POLICY_GROUP   "1 Cycle - MRM INFLOW FORECASTS";
   DESCRIPTION    "";
-  ACTIVE         TRUE;
+  ACTIVE         FALSE;
   NAMES_COLOR  "#ffaa00";
   NOTES          "";
   BEGIN
