@@ -1,8 +1,8 @@
 # RiverWare_Ruleset 7.4.2 Patch
-# Created 08:34 September 26, 2019
+# Created 15:08 September 26, 2019
 # 
 RULESET
-NAME "RBS Ruleset";
+NAME "RBS Ruleset (from MRM run)";
 AGENDA_ORDER ASCENDING;
 DESCRIPTION "The way the spike and TBF overage rules are written, the EOWYST is reached at some point between Sept 1 and Sept 30. In low hydrologic years, the EOWYST will be reached slightly earlier in that month.     ";
 PRECISION   2;
@@ -298,6 +298,44 @@ BEGIN
             $ "NavajoData.ReleaseToMeetTBF" [] := GET @INDEX 1.00000000 FROM forecastrelease;
 
       END_WITH_STATEMENT;
+
+    END;
+
+    RULE                 "Set Recalculated Local Inflows ";
+    DESCRIPTION          "Sets the gainloss based on the inflows on a daily basis to a slot in the gainloss data object.";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000;
+    NOTES                "";
+    BEGIN
+
+      $ "SJ4B.Local Inflow" [] := $ "SJ4B.DailyGainLoss" [@"t", $ "GainLossCalculations.SJ4BGL" []];
+
+      $ "SJAF.Local Inflow" [] := $ "SJAF.DailyGainLoss" [@"t", $ "GainLossCalculations.SJAFGL" []];
+
+      $ "SJFS.Local Inflow" [] := $ "SJFS.DailyGainLoss" [@"t", $ "GainLossCalculations.SJFSGL" []];
+
+      $ "SJS4.Local Inflow" [] := $ "SJS4.DailyGainLoss" [@"t", $ "GainLossCalculations.SJS4GL" []];
+
+      $ "Animas River.Local Inflow" [] := $ "Animas River.DailyGainLoss" [@"t", $ "GainLossCalculations.AnimasGL" []];
+
+    END;
+
+    RULE                 "Set Recalculated GainLoss Percentile";
+    DESCRIPTION          "Sets the gainloss percentile based on the inflows on a daily basis to a slot in the gainloss percentil data object for each Reach.";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000;
+    NOTES                "";
+    BEGIN
+
+      $ "GainLossCalculations.SJ4BGL" [] := "Adjust GainLoss"( % "SJ4B" );
+
+      $ "GainLossCalculations.SJAFGL" [] := "Adjust GainLoss"( % "SJAF" );
+
+      $ "GainLossCalculations.SJFSGL" [] := "Adjust GainLoss"( % "SJFS" );
+
+      $ "GainLossCalculations.SJS4GL" [] := "Adjust GainLoss"( % "SJS4" );
+
+      $ "GainLossCalculations.AnimasGL" [] := "Adjust GainLoss"( % "Animas River" );
 
     END;
 
@@ -1227,17 +1265,6 @@ BEGIN
 
     END;
 
-    RULE                 "Calc NIIP Diversions_(January)";
-    DESCRIPTION          "If you're in January or sometimes February, you need to use this rule instead of the normal NIIP adjustment rule. ";
-    ACTIVE               FALSE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
-    NOTES                "";
-    BEGIN
-
-      $ "NIIP.DailyForecastVol Adjusted" [] := $ "NIIP.DailyForecastVol" [];
-
-    END;
-
     RULE                 "Calc NIIP Daily Forecast";
     DESCRIPTION          "";
     ACTIVE               FALSE;
@@ -1264,7 +1291,7 @@ BEGIN
 
   POLICY_GROUP   "1 Cycle - OFFICIAL INFLOW FORECASTS";
   DESCRIPTION    "";
-  ACTIVE         FALSE;
+  ACTIVE         TRUE;
   NAMES_COLOR  "#ffaa00";
   NOTES          "";
   BEGIN
@@ -1272,7 +1299,7 @@ BEGIN
     RULE                 "Set SJC Diversion";
     DESCRIPTION          "Daily SJC diversion is directly related to the daily MUI flows. This correlation was made by comparing historic Azotea flows and MUI flows from 10/1/1980 - 8/31/2018.  We are assuming on a daily basis that Azotea will pull whatever is available. ";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT @"t" == @"Start Timestep" AND "GetRunCycleIndex"(  ) == 1.00000000;
+    RULE_EXEC_CONSTRAINT @"t" == @"Start Timestep" AND "GetRunCycleIndex"(  ) == 1.00000000 AND $ "SWITCHES.MODE" [] == 0.00000000;
     NOTES                "";
     BEGIN
 
@@ -1286,7 +1313,7 @@ BEGIN
     RULE                 "Set Month 1 Inflows";
     DESCRIPTION          "Do not use execution constraints. Inflows must be input every cycle (why?) or model will not execute completely.<br>";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT ( NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 1.00000000 );
+    RULE_EXEC_CONSTRAINT ( NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 1.00000000 ) AND $ "SWITCHES.MODE" [] == 0.00000000;
     NOTES                "";
     BEGIN
 
@@ -1315,7 +1342,7 @@ BEGIN
     RULE                 "Set Inflows";
     DESCRIPTION          "Do not use execution constraints. Inflows must be input every cycle (why?) or model will not execute completely.<br>";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT @"t" == @"Start Timestep" AND ( NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 1.00000000 );
+    RULE_EXEC_CONSTRAINT @"t" == @"Start Timestep" AND ( NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 1.00000000 ) AND $ "SWITCHES.MODE" [] == 0.00000000;
     NOTES                "";
     BEGIN
 
@@ -1335,7 +1362,7 @@ BEGIN
     RULE                 "1 Cycle - Write Scaled Forecast";
     DESCRIPTION          "";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" == @"Start Timestep";
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" == @"Start Timestep" AND $ "SWITCHES.MODE" [] == 0.00000000;
     NOTES                "";
     BEGIN
 
@@ -1362,7 +1389,7 @@ BEGIN
     RULE                 "1 Cycle - Write Forecast as Average of Nearest Years";
     DESCRIPTION          "";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" == @"Start Timestep";
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" == @"Start Timestep" AND $ "SWITCHES.MODE" [] == 0.00000000;
     NOTES                "";
     BEGIN
 
@@ -1394,7 +1421,7 @@ BEGIN
     RULE                 "1 Cycle - Find Nearest Years";
     DESCRIPTION          "";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" == @"Start Timestep";
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" == @"Start Timestep" AND $ "SWITCHES.MODE" [] == 0.00000000;
     NOTES                "";
     BEGIN
 
@@ -1444,7 +1471,7 @@ BEGIN
     RULE                 "Set SJC Diversion";
     DESCRIPTION          "Daily SJC diversion is directly related to the daily MUI flows. This correlation was made by comparing historic Azotea flows and MUI flows from 10/1/1980 - 8/31/2018.  We are assuming on a daily basis that Azotea will pull whatever is available. ";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT @"t" == @"Start Timestep" AND "GetRunCycleIndex"(  ) == 1.00000000;
+    RULE_EXEC_CONSTRAINT @"t" == @"Start Timestep" AND "GetRunCycleIndex"(  ) == 1.00000000 AND $ "SWITCHES.MODE" [] == 1.00000000;
     NOTES                "";
     BEGIN
 
@@ -1458,7 +1485,7 @@ BEGIN
     RULE                 "Set Inflows";
     DESCRIPTION          "Do not use execution constraints. Inflows must be input every cycle (why?) or model will not execute completely.<br>";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT @"t" == @"Start Timestep";
+    RULE_EXEC_CONSTRAINT @"t" == @"Start Timestep" AND $ "SWITCHES.MODE" [] == 1.00000000;
     NOTES                "";
     BEGIN
 
@@ -1969,6 +1996,32 @@ BEGIN
  ELSE
   "TargetHWGivenInflow"( Res, @"t", "DateMin"( "NextDate"( @"t", @"November 1" ), @"Finish Timestep" ), "StorageToElevation"( Res, ResEOYMinStorage [] ), "SumFlowsToVolume"( ResInflow, @"t", "DateMin"( "NextDate"( @"t", @"November 1" ), @"Finish Timestep" ) ), ResStorage [@"t - 1"] )
  ENDIF;
+
+    END;
+
+    FUNCTION       "Adjust GainLoss" ( OBJECT Reach )
+    RETURN_TYPE    NUMERIC;
+    SCALE_UNITS    "";
+    DESCRIPTION    "";
+    ACTIVE         TRUE;
+    PRE_EXEC_DIAG  FALSE;
+    POST_EXEC_DIAG FALSE;
+    NOTES          "";
+    BEGIN
+
+      FOR ( NUMERIC i IN { 0.00000000 , 1.00000000 , 2.00000000 , 3.00000000 , 4.00000000 , 5.00000000 , 6.00000000 , 7.00000000 , 8.00000000 } ) WITH NUMERIC exceedance = 0.10000000 DO
+  IF ( IsNaN Reach & "Inflow" [@"t"] )
+  THEN
+   0.50000000
+  ELSE
+   IF ( Reach & "Inflow" [@"t"] > $ "GainLossCalculations.Table" [STRINGIFY Reach, i] )
+   THEN
+    "Min"( 0.90000000, exceedance + 0.10000000 )
+   ELSE
+    exceedance
+   ENDIF
+  ENDIF
+ ENDFOR;
 
     END;
 
