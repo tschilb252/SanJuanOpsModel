@@ -1,5 +1,5 @@
-# RiverWare_Ruleset 8.2.3 Patch
-# Created 13:02 December 3, 2021
+# RiverWare_Ruleset 8.3.3 Patch
+# Created 14:03 January 6, 2022
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run) (from MRM run) (from MRM run) (from MRM run)";
@@ -469,8 +469,20 @@ BEGIN
     END
     UUID "{a641761d-88ff-464d-8b2c-b4dee0ca0de0}";;
 
-    RULE                 "CalculateMinReleaseByForecast";
+    RULE                 "SetMinRelease300 for 2022";
     DESCRIPTION          "This used to set min release by pool elevation, but now it sets min release based on if we are running min/most/max.  Ideally the min release would either be consistent no matter what, or would be based on the forecast.<br>";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 2.00000000 AND @"t" <= @"24:00:00 December 31, 2022";
+    NOTES                "";
+    BEGIN
+
+      $ "NavajoData.SeriesMinRelease" [] := 299.00000000 "cfs";
+
+    END
+    UUID "{261a0bec-0595-42e2-8e21-90ce34bd284a}";;
+
+    RULE                 "CalculateMinReleaseByForecast";
+    DESCRIPTION          "This used to set min release by pool elevation, but now it sets min release based on if we are running min/most/max.  Ideally the min release would either be consistent no matter what, or would be based on the forecast.<br><br>Typically we don't release as low as 250 cfs unless it looks like we are getting close to shortage, but 300 is a pretty normal min most of the time. I put 400 for the max probable.<br><br>";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 2.00000000;
     NOTES                "";
@@ -1920,11 +1932,11 @@ BEGIN
 
       IF ( $ "SWITCHES.CBRFC Forecast Type" [] == 1.00000000 )
  THEN
-  249.00000000 "cfs"
+  299.00000000 "cfs"
  ELSE
   IF ( $ "SWITCHES.CBRFC Forecast Type" [] == 3.00000000 )
   THEN
-   449.00000000 "cfs"
+   399.00000000 "cfs"
   ELSE
    299.00000000 "cfs"
   ENDIF
