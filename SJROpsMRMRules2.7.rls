@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 8.3.3 Patch
-# Created 14:03 January 6, 2022
+# Created 12:53 January 10, 2022
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run) (from MRM run) (from MRM run) (from MRM run)";
@@ -67,8 +67,8 @@ BEGIN
     UUID "{b65d859d-ea70-4c57-823a-102b0c92c689}";;
 
     RULE                 "DROA 2022 Risk Analysis Contribution";
-    DESCRIPTION          "Revised rule for August 24-MS Moves 1000 cfs per day for 10 days, November 25 - Dec 05<br><br><br>";
-    ACTIVE               FALSE;
+    DESCRIPTION          "For Chris and Wayne's flex analysis. Try moving<br>20kaf<br>50kaf<br>100 kaf<br>Until a shortage occurs.<br><br>";
+    ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000 AND @"t" < @"24:00:00 December 31, 2022" AND @"t" > @"24:00:00 October 31, 2021";
   NAMES_COLOR  "#ff0000";
     NOTES                "";
@@ -81,38 +81,6 @@ BEGIN
 
     END
     UUID "{49ef1172-445f-4273-b20c-6bbd4b7d5f83}";;
-
-    RULE                 "DROA 2021 Manual Contribution";
-    DESCRIPTION          "Revised rule for August 24-MS Moves 1000 cfs per day for 10 days, November 25 - Dec 05<br><br><br>";
-    ACTIVE               FALSE;
-    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000 AND @"t" < @"24:00:00 December 31, 2021" AND @"t" > @"24:00:00 October 31, 2021";
-  NAMES_COLOR  "#ff0000";
-    NOTES                "";
-    BEGIN
-
-      $ "Navajo Reservoir.Release" [] := IF ( NOT IsNaN $ "NavajoData.DROA2021" [] )
- THEN
-  $ "NavajoData.DROA2021" []
- ENDIF;
-
-    END
-    UUID "{2fe69205-b31f-48e3-a2e9-1af2da954450}";;
-
-    RULE                 "NO DROA 2021 Manual Contribution";
-    DESCRIPTION          "Revised rule for August 24-MS Moves 1000 cfs per day for 10 days, November 25 - Dec 05<br><br><br>";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000 AND @"t" < @"24:00:00 December 31, 2021" AND @"t" > @"24:00:00 October 31, 2021";
-  NAMES_COLOR  "#ff0000";
-    NOTES                "";
-    BEGIN
-
-      $ "Navajo Reservoir.Release" [] := IF ( NOT IsNaN $ "NavajoData.NoDROA" [] )
- THEN
-  $ "NavajoData.NoDROA" []
- ENDIF;
-
-    END
-    UUID "{3ad997cf-9215-4073-97df-9567a79e940f}";;
 
     RULE                 "KnownReleaseOverwrite";
     DESCRIPTION          "Adds in recent releases that are known. Also can add in actual SPR when in the middle of the release, or some other SJRIP Adaptive Management Use.  Leave NaN's when not changing anything and this will just overwrite.<br><br><br>";
