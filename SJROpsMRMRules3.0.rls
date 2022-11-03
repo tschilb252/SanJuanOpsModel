@@ -1,5 +1,5 @@
-# RiverWare_Ruleset 8.5.1 Patch
-# Created 11:02 September 2, 2022
+# RiverWare_Ruleset 8.5.3 Patch
+# Created 13:57 November 3, 2022
 # 
 RULESET
 NAME "RBS Ruleset";
@@ -1138,15 +1138,15 @@ BEGIN
     END
     UUID "{45319a27-0899-4b74-88fa-431d555297da}";;
 
-    RULE                 "SetMinReleaseFor2020-2021Winter_TEMP";
+    RULE                 "SetMinReleaseThisYear";
     DESCRIPTION          "";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" < @"24:00:00 June 1, 2021";
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" < @"24:00:00 June 1, 2023";
   NAMES_COLOR  "#aa00ff";
     NOTES                "";
     BEGIN
 
-      $ "Vallecito Reservoir.Outflow" [] := 6.00000000 "cfs";
+      $ "Vallecito Reservoir.Outflow" [] := 5.00000000 "cfs";
 
     END
     UUID "{37bc55ba-eed8-4312-8d24-03c7748beca9}";;
