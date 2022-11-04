@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 8.5.3 Patch
-# Created 13:57 November 3, 2022
+# Created 12:26 November 4, 2022
 # 
 RULESET
 NAME "RBS Ruleset";
@@ -435,7 +435,7 @@ BEGIN
     NOTES                "";
     BEGIN
 
-      $ "NavajoData.SeriesMinRelease" [] := 249.00000000 "cfs";
+      $ "NavajoData.SeriesMinRelease" [] := 299.00000000 "cfs";
 
     END
     UUID "{261a0bec-0595-42e2-8e21-90ce34bd284a}";;
