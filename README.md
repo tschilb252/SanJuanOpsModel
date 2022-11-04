@@ -8,5 +8,5 @@ The Min/Most/Max runs of the 24-Month Study (current month) are also posted here
 considered final once the 24-MOnth Study is published (around the middle of each month).
 
 Susan Behery sbehery@usbr.gov
-last updated 
+Readme last updated 
 November 3, 2022
