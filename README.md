@@ -7,5 +7,5 @@ and/or methods are made.
 The Min/Most/Max runs of the 24-Month Study (current month) are also posted here. These runs are posted for informational purposes,and are revised as necessary. 
 
 Susan Behery sbehery@usbr.gov
-Readme last updated 
-November 3, 2022
+
+
