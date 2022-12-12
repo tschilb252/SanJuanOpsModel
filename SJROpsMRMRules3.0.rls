@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 8.5.3 Patch
-# Created 12:26 November 4, 2022
+# Created 15:53 December 8, 2022
 # 
 RULESET
 NAME "RBS Ruleset";
@@ -15,22 +15,6 @@ BEGIN
   NAMES_COLOR  "#00aa00";
   NOTES          "";
   BEGIN
-
-    RULE                 "RecordShortageAndDemands";
-    DESCRIPTION          "Whole demands from Cycle 3 is the volumetric addition of Navajo Release, NIIP, and San Juan-Chama, MINUS the 250cfs minimum daily release from Navajo in acre-feet.  This ensures we are adding together only volumes that are available to short.<br>";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND $ "SWITCHES.Magic Water" [] == 1.00000000;
-    NOTES                "";
-    BEGIN
-
-      $ "ShortageData.ShortageVolumeToRecover" [] := "FlowToVolume"( $ "Shortage.Local Inflow" [], @"t" );
-
-      $ "ShortageData.WholeDemandsFromCycle3" [] := "FlowToVolume"( $ "Navajo Reservoir.Release" [], @"t" ) + "FlowToVolume"( $ "NIIP.Diversion" [], @"t" ) + "FlowToVolume"( $ "San Juan Chama Project.Diversion" [], @"t" ) - 495.86776800 "acre-feet";
-
-      $ "ShortageData.NavajoReleasesCycle3" [] := $ "Navajo Reservoir.Release" [];
-
-    END
-    UUID "{e33e195d-f11a-420e-817d-fae043fe96b5}";;
 
     RULE                 "Shortage-KeepsNavajoWhole";
     DESCRIPTION          "This is the volume Navajo is shorted by. It's automatically added to Navajo as a &quot;ghost&quot; inflow.   This is saved when we get to the end of Cycle 3 (by the next rule).<br>";
@@ -138,6 +122,31 @@ BEGIN
   NOTES          "";
   BEGIN
 
+    RULE                 "TNC Water";
+    DESCRIPTION          "This is where we would add in TNC water as requested to the release.  TNC water would flow downstream without being diverted.";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT TRUE;
+    NOTES                "";
+    BEGIN
+
+      $ "Navajo Reservoir.Release" [] := $ "Navajo Reservoir.Release" [] + $ "Navajo Contracts.TNC_JAN" [];
+
+    END
+    UUID "{778a22ff-f1f1-48a0-8f94-fe975a952c7a}";;
+
+    RULE                 "DROA Water";
+    DESCRIPTION          "For Chris and Wayne's flex analysis. Try moving<br>20kaf<br>50kaf<br>100 kaf<br>Until a shortage occurs.<br><br>";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000 AND $ "SWITCHES.DROA" [] == 1.00000000;
+  NAMES_COLOR  "#55aa00";
+    NOTES                "";
+    BEGIN
+
+      $ "Navajo Reservoir.Release" [] := $ "Navajo Reservoir.Release" [] + $ "NavajoData.DROA" [];
+
+    END
+    UUID "{49ef1172-445f-4273-b20c-6bbd4b7d5f83}";;
+
     RULE                 "AddSpike";
     DESCRIPTION          "";
     ACTIVE               TRUE;
@@ -203,7 +212,7 @@ BEGIN
     NOTES                "";
     BEGIN
 
-      WITH_STATEMENT (LIST forecastrelease = "HypTargetSimWithStatus"( "BelowReservoirs", $ "SJAF.Inflow", $ "NavajoData.SeriesMinRelease" [], $ "NavajoData.MaxRelease" [], { { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 1" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 2" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 3" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 1" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 2" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 3" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 1" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 2" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 3" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 3" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 3" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 3" } }, $ "SJS4.Outflow", @"t + 3", "Min"( $ "NavajoData.SeriesMinTBF" [] + $ "NavajoData.SummerTBFOverage" [], $ "NavajoData.MAX TBF" [] ), 10.00000000 "cfs", 40.00000000, 0.00000000 )) DO
+      WITH_STATEMENT (LIST forecastrelease = "HypTargetSimWithStatus"( "BelowReservoirs", $ "SJAF.Inflow", $ "NavajoData.SeriesMinRelease" [], $ "NavajoData.MaxRelease" [], { { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 1" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 2" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 3" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 1" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 2" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 3" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 1" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 2" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 3" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 3" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 3" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 3" } }, $ "SJS4.Outflow", @"t + 3", "Min"( $ "NavajoData.ShortageMinTBF" [] + $ "NavajoData.SummerTBFOverage" [], $ "NavajoData.MAX TBF" [] ), 10.00000000 "cfs", 40.00000000, 0.00000000 )) DO
             $ "NavajoData.ReleaseToMeetTBF" [] := GET @INDEX 1.00000000 FROM forecastrelease;
 
       END_WITH_STATEMENT;
@@ -385,14 +394,14 @@ BEGIN
     UUID "{57aa386f-78fb-4a55-b534-c53d81e6d8fe}";;
 
     RULE                 "Forecast Releases_SeriesTBF - Shortage";
-    DESCRIPTION          "Forecasts the release required to meet the TBF minimum downstream.  If the function cannot find a release to use, hypsim will return a message in diagnostics and will be ineffective.<br>";
+    DESCRIPTION          "Forecasts the release required to meet the TBF minimum downstream.  If the function cannot find a release to use, hypsim will return a message in diagnostics and will be ineffective.  This is normal and expected during high flow releases like SPR or spike.<br><br>";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 2.00000000 AND $ "SWITCHES.Shortage" [] == 1.00000000;
   NAMES_COLOR  "#aa00ff";
     NOTES                "";
     BEGIN
 
-      WITH_STATEMENT (LIST forecastrelease = "HypTargetSimWithStatus"( "BelowReservoirs", $ "SJAF.Inflow", $ "NavajoData.SeriesMinRelease" [], $ "NavajoData.MaxRelease" [], { { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 1" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 2" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 3" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 1" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 2" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 3" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 1" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 2" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 3" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 3" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 3" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 3" } }, $ "SJS4.Outflow", @"t + 3", $ "NavajoData.SeriesMinTBF" [], 10.00000000 "cfs", 40.00000000, 0.00000000 )) DO
+      WITH_STATEMENT (LIST forecastrelease = "HypTargetSimWithStatus"( "BelowReservoirs", $ "SJAF.Inflow", $ "NavajoData.SeriesMinRelease" [], $ "NavajoData.MaxRelease" [], { { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 1" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 2" } , { $ "Florida River.Inflow" , $ "Florida River.Inflow" [@"t"] , @"t + 3" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 1" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 2" } , { $ "Pine River.Inflow" , $ "Pine River.Inflow" [@"t"] , @"t + 3" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 1" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 2" } , { $ "Basin Creek Y Animas.Inflow2" , $ "Basin Creek Y Animas.Inflow2" [@"t"] , @"t + 3" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJAF.Local Inflow" , $ "SJAF.Local Inflow" [@"t - 1"] , @"t + 3" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJFS.Local Inflow" , $ "SJFS.Local Inflow" [@"t - 1"] , @"t + 3" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 1" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 2" } , { $ "SJS4.Local Inflow" , $ "SJS4.Local Inflow" [@"t - 1"] , @"t + 3" } }, $ "SJS4.Outflow", @"t + 3", $ "NavajoData.ShortageMinTBF" [], 10.00000000 "cfs", 40.00000000, 0.00000000 )) DO
             $ "NavajoData.ReleaseToMeetTBF" [] := GET @INDEX 1.00000000 FROM forecastrelease;
 
       END_WITH_STATEMENT;
@@ -1197,8 +1206,8 @@ BEGIN
     END
     UUID "{3794d3c6-8046-4668-9169-57935dcb2e4b}";;
 
-    RULE                 "Set Local Inflows- New Method";
-    DESCRIPTION          "Daily gainloss is a calculated gage-to-gage statistical loss. Choose statistical for entire model run in SWITCHES object. <br>Local inflows will never make river go less than 0. This is recorded in the reach &quot;unidentified loss&quot;.<br>Yes.<br>";
+    RULE                 "Set Local Inflows- Original";
+    DESCRIPTION          "Daily gainloss is a calculated gage-to-gage statistical loss. Choose statistical for entire model run in SWITCHES object. <br>Local inflows will never make river go less than 0. This is recorded in the reach &quot;unidentified loss&quot;.<br>";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND $ "SWITCHES.UseNewGainLosses" [] == 1.00000000;
     NOTES                "";
@@ -1206,13 +1215,13 @@ BEGIN
 
       $ "Animas River.Local Inflow" [] := $ "Animas River.DailyGainLoss" [@"t", $ "SWITCHES.ReachLossPercentile" []];
 
-      $ "SJAF.Local Inflow" [] := $ "SJAF.DailyGainLoss_001" [@"t", $ "SWITCHES.ReachLossPercentile" []];
+      $ "SJAF.Local Inflow" [] := $ "SJAF.DailyGainLoss" [@"t", $ "SWITCHES.ReachLossPercentile" []];
 
-      $ "SJFS.Local Inflow" [] := $ "SJFS.DailyGainLoss_0001" [@"t", $ "SWITCHES.ReachLossPercentile" []];
+      $ "SJFS.Local Inflow" [] := $ "SJFS.DailyGainLoss" [@"t", $ "SWITCHES.ReachLossPercentile" []];
 
-      $ "SJS4.Local Inflow" [] := $ "SJS4.DailyGainLoss_0001" [@"t", $ "SWITCHES.ReachLossPercentile" []];
+      $ "SJS4.Local Inflow" [] := $ "SJS4.DailyGainLoss" [@"t", $ "SWITCHES.ReachLossPercentile" []];
 
-      $ "SJ4B.Local Inflow" [] := $ "SJ4B.DailyGainLoss_0001" [@"t", $ "SWITCHES.ReachLossPercentile" []];
+      $ "SJ4B.Local Inflow" [] := $ "SJ4B.DailyGainLoss" [@"t", $ "SWITCHES.ReachLossPercentile" []];
 
       $ "Pine River.Local Inflow" [] := $ "Pine River.DailyGainLoss" [@"t", $ "SWITCHES.ReachLossPercentile" []];
 
@@ -1222,7 +1231,7 @@ BEGIN
     UUID "{f02dc506-0c84-487c-b80f-df746174f095}";;
 
     RULE                 "Set Local Inflows- Forecast Based";
-    DESCRIPTION          "Daily gainloss is a calculated gage-to-gage statistical loss. Choose statistical for entire model run in SWITCHES object. <br>Local inflows will never make river go less than 0. This is recorded in the reach &quot;unidentified loss&quot;.<br>Yes.<br>";
+    DESCRIPTION          "Daily gainloss is a calculated gage-to-gage statistical loss. Choose statistical for entire model run in SWITCHES object. <br>Local inflows will never make river go less than 0. This is recorded in the reach &quot;unidentified loss&quot;.<br>";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND $ "SWITCHES.UseNewGainLosses" [] == 2.00000000;
     NOTES                "";
@@ -1232,13 +1241,13 @@ BEGIN
       $ "Animas River.Local Inflow" [] := $ "Animas River.DailyGainLoss" [@"t", "Lookup Loss Percentile"( "DRGC2" )];
 
     DESCRIPTION          "Use NVRN5 <br>";
-      $ "SJAF.Local Inflow" [] := $ "SJAF.DailyGainLoss_001" [@"t", "Lookup Loss Percentile"( "NVRN5" )];
+      $ "SJAF.Local Inflow" [] := $ "SJAF.DailyGainLoss" [@"t", "Lookup Loss Percentile"( "NVRN5" )];
 
-      $ "SJFS.Local Inflow" [] := $ "SJFS.DailyGainLoss_0001" [@"t", "Lookup Loss Percentile"( "NVRN5" )];
+      $ "SJFS.Local Inflow" [] := $ "SJFS.DailyGainLoss" [@"t", "Lookup Loss Percentile"( "NVRN5" )];
 
-      $ "SJS4.Local Inflow" [] := $ "SJS4.DailyGainLoss_0001" [@"t", "Lookup Loss Percentile"( "NVRN5" )];
+      $ "SJS4.Local Inflow" [] := $ "SJS4.DailyGainLoss" [@"t", "Lookup Loss Percentile"( "NVRN5" )];
 
-      $ "SJ4B.Local Inflow" [] := $ "SJ4B.DailyGainLoss_0001" [@"t", "Lookup Loss Percentile"( "NVRN5" )];
+      $ "SJ4B.Local Inflow" [] := $ "SJ4B.DailyGainLoss" [@"t", "Lookup Loss Percentile"( "NVRN5" )];
 
     DESCRIPTION          "Use LEMC2 for the forecast location <br>";
       $ "Pine River.Local Inflow" [] := $ "Pine River.DailyGainLoss" [@"t", "Lookup Loss Percentile"( "VCRC2" )];
@@ -1604,22 +1613,6 @@ BEGIN
     END
     UUID "{05ec0343-8700-44e6-aa5c-433737b4e2df}";;
 
-    RULE                 "DROA 2022 Risk Analysis Contribution";
-    DESCRIPTION          "For Chris and Wayne's flex analysis. Try moving<br>20kaf<br>50kaf<br>100 kaf<br>Until a shortage occurs.<br><br>";
-    ACTIVE               FALSE;
-    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000 AND @"t" < @"24:00:00 December 31, 2022" AND @"t" > @"24:00:00 October 31, 2021";
-  NAMES_COLOR  "#0055ff";
-    NOTES                "";
-    BEGIN
-
-      $ "Navajo Reservoir.Release" [] := IF ( NOT IsNaN $ "NavajoData.DROA2022" [] )
- THEN
-  $ "NavajoData.DROA2022" []
- ENDIF;
-
-    END
-    UUID "{49ef1172-445f-4273-b20c-6bbd4b7d5f83}";;
-
     RULE                 "Set NIIP Diversions -MANUAL SHORTED next CY";
     DESCRIPTION          "Reduces NIIP diversion during a shortage in the timeframe specified. Use proportional estimates to reduce NIIP by an exact amount. THen resolve the remainder through the downstream release.<br><br>";
     ACTIVE               FALSE;
@@ -1632,6 +1625,22 @@ BEGIN
 
     END
     UUID "{c6d2fd5c-ce72-4a90-b585-afa153545ff0}";;
+
+    RULE                 "RecordShortageAndDemands";
+    DESCRIPTION          "Whole demands from Cycle 3 is the volumetric addition of Navajo Release, NIIP, and San Juan-Chama, MINUS the 250cfs minimum daily release from Navajo in acre-feet.  This ensures we are adding together only volumes that are available to short.<br>";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND $ "SWITCHES.Magic Water" [] == 1.00000000;
+    NOTES                "";
+    BEGIN
+
+      $ "ShortageData.ShortageVolumeToRecover" [] := "FlowToVolume"( $ "Shortage.Local Inflow" [], @"t" );
+
+      $ "ShortageData.WholeDemandsFromCycle3" [] := "FlowToVolume"( $ "Navajo Reservoir.Release" [], @"t" ) + "FlowToVolume"( $ "NIIP.Diversion" [], @"t" ) + "FlowToVolume"( $ "San Juan Chama Project.Diversion" [], @"t" ) - 495.86776800 "acre-feet";
+
+      $ "ShortageData.NavajoReleasesCycle3" [] := $ "Navajo Reservoir.Release" [];
+
+    END
+    UUID "{e33e195d-f11a-420e-817d-fae043fe96b5}";;
 
   END
   UUID "{7073a789-d8ef-439a-ae1a-08e65b321426}";;
