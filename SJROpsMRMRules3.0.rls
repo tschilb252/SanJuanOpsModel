@@ -1,8 +1,8 @@
 # RiverWare_Ruleset 8.5.3 Patch
-# Created 15:53 December 8, 2022
+# Created 14:22 December 15, 2022
 # 
 RULESET
-NAME "RBS Ruleset";
+NAME "RBS Ruleset (from MRM run)";
 AGENDA_ORDER ASCENDING;
 DESCRIPTION "The way the spike and TBF overage rules are written, the EOWYST is reached at some point between Sept 1 and Sept 30. In low hydrologic years, the EOWYST will be reached slightly earlier in that month.     ";
 PRECISION   2;
@@ -122,14 +122,14 @@ BEGIN
   NOTES          "";
   BEGIN
 
-    RULE                 "TNC Water";
+    RULE                 "JANLease Water";
     DESCRIPTION          "This is where we would add in TNC water as requested to the release.  TNC water would flow downstream without being diverted.";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT TRUE;
     NOTES                "";
     BEGIN
 
-      $ "Navajo Reservoir.Release" [] := $ "Navajo Reservoir.Release" [] + $ "Navajo Contracts.TNC_JAN" [];
+      $ "Navajo Reservoir.Release" [] := $ "Navajo Reservoir.Release" [] + $ "Navajo Contracts.JANlease" [];
 
     END
     UUID "{778a22ff-f1f1-48a0-8f94-fe975a952c7a}";;
