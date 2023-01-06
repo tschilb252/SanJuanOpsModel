@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 8.5.3 Patch
-# Created 14:22 December 15, 2022
+# Created 11:22 January 6, 2023
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run)";
@@ -122,18 +122,6 @@ BEGIN
   NOTES          "";
   BEGIN
 
-    RULE                 "JANLease Water";
-    DESCRIPTION          "This is where we would add in TNC water as requested to the release.  TNC water would flow downstream without being diverted.";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT TRUE;
-    NOTES                "";
-    BEGIN
-
-      $ "Navajo Reservoir.Release" [] := $ "Navajo Reservoir.Release" [] + $ "Navajo Contracts.JANlease" [];
-
-    END
-    UUID "{778a22ff-f1f1-48a0-8f94-fe975a952c7a}";;
-
     RULE                 "DROA Water";
     DESCRIPTION          "For Chris and Wayne's flex analysis. Try moving<br>20kaf<br>50kaf<br>100 kaf<br>Until a shortage occurs.<br><br>";
     ACTIVE               TRUE;
@@ -178,9 +166,21 @@ BEGIN
     END
     UUID "{fae6da4f-dfcf-4f62-bd28-78d1207fa965}";;
 
+    RULE                 "JANLease Water";
+    DESCRIPTION          "This is where we would add in TNC water as requested to the release.  TNC water would flow downstream without being diverted.";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" );
+    NOTES                "";
+    BEGIN
+
+      $ "Navajo Reservoir.Release" [] := "Min"( $ "Navajo Reservoir.Release" [] + $ "Navajo Contracts.JANlease" [], $ "Navajo Reservoir.Max Release" [] );
+
+    END
+    UUID "{778a22ff-f1f1-48a0-8f94-fe975a952c7a}";;
+
     RULE                 "Manual Maintenance Release";
     DESCRIPTION          "When SPR has begun (when very close to SPR time) , the SPR must be manually input here-- this rule should be turned off and the SPR being used should be input into the &quot;NavajoData.KnownReleasePattern&quot; slot.";
-    ACTIVE               FALSE;
+    ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000;
   NAMES_COLOR  "#aa55ff";
     NOTES                "";
@@ -1149,7 +1149,7 @@ BEGIN
 
     RULE                 "SetMinReleaseThisYear";
     DESCRIPTION          "";
-    ACTIVE               TRUE;
+    ACTIVE               FALSE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" < @"24:00:00 June 1, 2023";
   NAMES_COLOR  "#aa00ff";
     NOTES                "";
