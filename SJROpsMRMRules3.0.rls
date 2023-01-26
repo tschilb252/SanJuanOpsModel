@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 8.5.3 Patch
-# Created 11:22 January 6, 2023
+# Created 11:07 January 26, 2023
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run)";
@@ -167,13 +167,13 @@ BEGIN
     UUID "{fae6da4f-dfcf-4f62-bd28-78d1207fa965}";;
 
     RULE                 "JANLease Water";
-    DESCRIPTION          "This is where we would add in TNC water as requested to the release.  TNC water would flow downstream without being diverted.";
+    DESCRIPTION          "This is where we would add in JAN lease water as requested to the release.  This water would flow downstream on top of the regular release. Is this correct? Would likely change year to year. If the water has not yet been requested in any one year, then this rule is turned off.<br><br>";
     ACTIVE               FALSE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" );
     NOTES                "";
     BEGIN
 
-      $ "Navajo Reservoir.Release" [] := "Min"( $ "Navajo Reservoir.Release" [] + $ "Navajo Contracts.JANlease" [], $ "Navajo Reservoir.Max Release" [] );
+      $ "Navajo Reservoir.Release" [] := $ "Navajo Reservoir.Release" [] + $ "Navajo Contracts.JANlease" [];
 
     END
     UUID "{778a22ff-f1f1-48a0-8f94-fe975a952c7a}";;
@@ -573,7 +573,7 @@ BEGIN
     RULE                 "PumpingOperation-withrefill-choose step pump THIS YEAR";
     DESCRIPTION          "If it's the first day of pumping, then we pick the appropriate step pump. Then anytime over the next two months that the reservoir is < 6882, the pumps kick back on and choose the May 1 pump rate. This will get messy once we get into actual pumping season, and we will need to rely on realtime pump estimates.";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND "ALP Pumping Season"(  ) AND NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND @"t" < @"24:00:00 December 31, 2022";
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND "ALP Pumping Season"(  ) AND NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND @"t" < @"24:00:00 December 31, 2023";
     NOTES                "";
     BEGIN
 
