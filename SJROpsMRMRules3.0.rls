@@ -1,5 +1,5 @@
-# RiverWare_Ruleset 8.5.3 Patch
-# Created 11:07 January 26, 2023
+# RiverWare_Ruleset 9.0.1 Patch
+# Created 10:16 February 2, 2023
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run)";
@@ -130,7 +130,7 @@ BEGIN
     NOTES                "";
     BEGIN
 
-      $ "Navajo Reservoir.Release" [] := $ "Navajo Reservoir.Release" [] + $ "NavajoData.DROA" [];
+      $ "Navajo Reservoir.Release" [] := "Min"( "Max"( $ "Navajo Reservoir.Release" [] + $ "NavajoData.DROA" [], $ "Navajo Reservoir.Release" [] ), "MaxReleaseFunction_SafetyFactor"(  ) );
 
     END
     UUID "{49ef1172-445f-4273-b20c-6bbd4b7d5f83}";;
@@ -168,12 +168,12 @@ BEGIN
 
     RULE                 "JANLease Water";
     DESCRIPTION          "This is where we would add in JAN lease water as requested to the release.  This water would flow downstream on top of the regular release. Is this correct? Would likely change year to year. If the water has not yet been requested in any one year, then this rule is turned off.<br><br>";
-    ACTIVE               FALSE;
+    ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" );
     NOTES                "";
     BEGIN
 
-      $ "Navajo Reservoir.Release" [] := $ "Navajo Reservoir.Release" [] + $ "Navajo Contracts.JANlease" [];
+      $ "Navajo Reservoir.Release" [] := "Min"( "Max"( $ "Navajo Reservoir.Release" [] + $ "Navajo Contracts.JANlease" [], $ "Navajo Reservoir.Release" [] ), "MaxReleaseFunction_SafetyFactor"(  ) );
 
     END
     UUID "{778a22ff-f1f1-48a0-8f94-fe975a952c7a}";;
@@ -286,7 +286,7 @@ BEGIN
     NOTES                "";
     BEGIN
 
-      $ "NavajoData.Cycle3NumSPRDays" [] := IF ( $ "NavajoData.Cycle3SpringPeakRelease" [] > 0.00000000 "cfs" )
+      $ "NavajoData.Cycle3NumSPRDays" [] := IF ( $ "NavajoData.Cycle3SpringPeakRelease" [] > 4999.00000000 "cfs" )
  THEN
   1.00000000
  ELSE
@@ -296,8 +296,8 @@ BEGIN
     END
     UUID "{47727a3a-2ae0-48bf-ac1b-c4332a8f059a}";;
 
-    RULE                 "SetSPR";
-    DESCRIPTION          "When SPR has begun (when very close to SPR time) , the SPR must be manually input here-- this rule should be turned off and the SPR being used should be input into the &quot;NavajoData.KnownReleasePattern&quot; slot.";
+    RULE                 "SetSPRbyVolume";
+    DESCRIPTION          "this will pick the SPR based on volume. The 288,000 af is the equivalent to a 21-day SPR with 7-day ramp up and 14-day ramp down as rec by SJRIP. This number can be reduced to 0 af if we want to have the lower range releases as a possibility. SNB  2/2/23<br>";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" );
   NAMES_COLOR  "#00aa00";
@@ -306,11 +306,16 @@ BEGIN
 
       $ "NavajoData.Cycle3SpringPeakRelease" [] := IF ( "SpringPeakReleaseSeason"(  ) )
  THEN
-  $ "NavajoData.SPRTables_7dayramp" [@"t", $ "NavajoData.Cycle3MaxDaysAtPeak" [@"t"]]
+  IF ( $ "NavajoData.Cycle3AvailableWater" [@"t"] > $ "NavajoData.MinSPRVolumeConsidered" [] )
+  THEN
+   $ "NavajoData.SPRTables Low Range_byVolume" [@"t", $ "NavajoData.Cycle3AvailableWater" [@"t"]]
+  ELSE
+   $ "NavajoData.SPRTables Low Range_byVolume" [@"t", 0.00000000 "acre-feet"]
+  ENDIF
  ENDIF;
 
     END
-    UUID "{e2b6c1fe-51ae-415c-b504-7ae1057aa089}";;
+    UUID "{a7c1cb9d-f003-4b2d-a12e-0f3f83144c22}";;
 
     RULE                 "CalcMaxDaysAtPeak";
     DESCRIPTION          "This rule takes the AW and subtracts an appx 7-day ramp-up volume over base, and a 12-day ramp-down volume over base. Then it divdes the remainder by the volume of a single peak day over base. This returns the total number of days we will run at 5,000 cfs.  In the end, it may be +/- a day or two.<br><br>Doesn't need to be a round number since we're using tables.<br><br>Change the 50,000 number if changing the # of ramping days, and point to the correct SPR ramp table.<br>3-day:18,000<br>7-day: 42,000<br>10-day: 61,000<br><br>Ramp-down (12-days): 65,000";
@@ -1641,6 +1646,22 @@ BEGIN
 
     END
     UUID "{e33e195d-f11a-420e-817d-fae043fe96b5}";;
+
+    RULE                 "SetSPRbyPeakDays";
+    DESCRIPTION          "When SPR has begun (when very close to SPR time) , the SPR must be manually input here-- this rule should be turned off and the SPR being used should be input into the &quot;NavajoData.KnownReleasePattern&quot; slot.";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" );
+  NAMES_COLOR  "#00aa00";
+    NOTES                "";
+    BEGIN
+
+      $ "NavajoData.Cycle3SpringPeakRelease" [] := IF ( "SpringPeakReleaseSeason"(  ) )
+ THEN
+  $ "NavajoData.SPRTables_7dayramp" [@"t", $ "NavajoData.Cycle3MaxDaysAtPeak" [@"t"]]
+ ENDIF;
+
+    END
+    UUID "{e2b6c1fe-51ae-415c-b504-7ae1057aa089}";;
 
   END
   UUID "{7073a789-d8ef-439a-ae1a-08e65b321426}";;
