@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 9.0.1 Patch
-# Created 10:16 February 2, 2023
+# Created 10:49 April 6, 2023
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run)";
@@ -35,7 +35,7 @@ BEGIN
     UUID "{456ff907-2750-4c4f-a778-3d4adf9f5c1a}";;
 
     RULE                 "NIIPoffbelow5985";
-    DESCRIPTION          "This is the volume Navajo is shorted by. It's automatically added to Navajo as a &quot;ghost&quot; inflow.   This is saved when we get to the end of Cycle 3 (by the next rule).<br>";
+    DESCRIPTION          "<br>";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) < 4.00000000;
   NAMES_COLOR  "#00aa00";
@@ -286,7 +286,7 @@ BEGIN
     NOTES                "";
     BEGIN
 
-      $ "NavajoData.Cycle3NumSPRDays" [] := IF ( $ "NavajoData.Cycle3SpringPeakRelease" [] > 4999.00000000 "cfs" )
+      $ "NavajoData.Cycle3NumSPRDays" [] := IF ( $ "NavajoData.Cycle3SpringPeakRelease" [] > 4599.00000000 "cfs" )
  THEN
   1.00000000
  ELSE
@@ -328,6 +328,19 @@ BEGIN
 
     END
     UUID "{e42d88a8-6a74-4d15-927a-55ee1d291357}";;
+
+    RULE                 "AW Correction";
+    DESCRIPTION          "When the resulting EOWST is not exactly 6050 ft, use this to adjust the AW calculation<br>";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "SpringPeakReleaseSeason"(  );
+  NAMES_COLOR  "#ff0000";
+    NOTES                "";
+    BEGIN
+
+      $ "NavajoData.Cycle3AvailableWater" [] := $ "NavajoData.Cycle3AvailableWater" [] - $ "NavajoData.AWCorrection" [];
+
+    END
+    UUID "{daa87de3-09c7-45da-ae23-6544cf8c1a58}";;
 
     RULE                 "Recalculated Available Water";
     DESCRIPTION          "AW calculation based on new calculation using EOWYST of 6050 ft. The AW calculated is the volume OVER base (350 cfs) that would be available.  ";
@@ -929,22 +942,6 @@ BEGIN
 
     END
     UUID "{b355b2a9-05f9-4346-929e-689a9b7f4d61}";;
-
-    RULE                 "MaxSafeChannelRelease2021";
-    DESCRIPTION          "";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" < @"24:00:00 June 1, 2021";
-  NAMES_COLOR  "#aa00ff";
-    NOTES                "";
-    BEGIN
-
-      $ "Vallecito Reservoir.Outflow" [] := IF ( $ "Vallecito Reservoir.Outflow" [] > 2200.00000000 "cfs" )
- THEN
-  2200.00000000 "cfs"
- ENDIF;
-
-    END
-    UUID "{cd45f509-21ad-4b75-84aa-4482c45dc3e9}";;
 
     RULE                 "MaxSafeChannelRelease";
     DESCRIPTION          "";
