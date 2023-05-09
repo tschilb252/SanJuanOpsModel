@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 9.0.1 Patch
-# Created 10:49 April 6, 2023
+# Created 10:26 May 4, 2023
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run)";
@@ -124,7 +124,7 @@ BEGIN
 
     RULE                 "DROA Water";
     DESCRIPTION          "For Chris and Wayne's flex analysis. Try moving<br>20kaf<br>50kaf<br>100 kaf<br>Until a shortage occurs.<br><br>";
-    ACTIVE               TRUE;
+    ACTIVE               FALSE;
     RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000 AND $ "SWITCHES.DROA" [] == 1.00000000;
   NAMES_COLOR  "#55aa00";
     NOTES                "";
@@ -168,7 +168,7 @@ BEGIN
 
     RULE                 "JANLease Water";
     DESCRIPTION          "This is where we would add in JAN lease water as requested to the release.  This water would flow downstream on top of the regular release. Is this correct? Would likely change year to year. If the water has not yet been requested in any one year, then this rule is turned off.<br><br>";
-    ACTIVE               TRUE;
+    ACTIVE               FALSE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" );
     NOTES                "";
     BEGIN
@@ -177,19 +177,6 @@ BEGIN
 
     END
     UUID "{778a22ff-f1f1-48a0-8f94-fe975a952c7a}";;
-
-    RULE                 "Manual Maintenance Release";
-    DESCRIPTION          "When SPR has begun (when very close to SPR time) , the SPR must be manually input here-- this rule should be turned off and the SPR being used should be input into the &quot;NavajoData.KnownReleasePattern&quot; slot.";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000;
-  NAMES_COLOR  "#aa55ff";
-    NOTES                "";
-    BEGIN
-
-      $ "Navajo Reservoir.Release" [] := "Max"( $ "NavajoData.ManualMaintenanceRelease" [], $ "Navajo Reservoir.Release" [] );
-
-    END
-    UUID "{9f7f1154-c8f9-4b55-91e8-d480753b4bfb}";;
 
     RULE                 "IncrementRelease_Simple";
     DESCRIPTION          "This rule increments the release into blocks (accounts for gate curve, min resolution of changes)<br>8/2/2018- updated to use &quot;249cfs&quot; instead of min release function<br>";
@@ -1659,6 +1646,22 @@ BEGIN
 
     END
     UUID "{e2b6c1fe-51ae-415c-b504-7ae1057aa089}";;
+
+    RULE                 "Manual Maintenance Release";
+    DESCRIPTION          "When SPR has begun (when very close to SPR time) , the SPR must be manually input here-- this rule should be turned off and the SPR being used should be input into the &quot;NavajoData.KnownReleasePattern&quot; slot.";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000;
+  NAMES_COLOR  "#aa55ff";
+    NOTES                "";
+    BEGIN
+
+      $ "Navajo Reservoir.Release" [] := IF ( NOT IsNaN $ "NavajoData.ManualMaintenanceRelease" [] )
+ THEN
+  $ "NavajoData.ManualMaintenanceRelease" []
+ ENDIF;
+
+    END
+    UUID "{9f7f1154-c8f9-4b55-91e8-d480753b4bfb}";;
 
   END
   UUID "{7073a789-d8ef-439a-ae1a-08e65b321426}";;
