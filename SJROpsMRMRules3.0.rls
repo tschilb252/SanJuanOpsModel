@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 9.0.1 Patch
-# Created 10:26 May 4, 2023
+# Created 11:42 August 2, 2023
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run)";
@@ -441,31 +441,18 @@ BEGIN
     END
     UUID "{a641761d-88ff-464d-8b2c-b4dee0ca0de0}";;
 
-    RULE                 "SetMinRelease for 2022-2024";
-    DESCRIPTION          "This used to set min release by pool elevation, but now it sets min release based on if we are running min/most/max.  Ideally the min release would either be consistent no matter what, or would be based on the forecast.<br>";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 2.00000000 AND @"t" <= @"24:00:00 December 31, 2023";
-  NAMES_COLOR  "#ff0000";
-    NOTES                "";
-    BEGIN
-
-      $ "NavajoData.SeriesMinRelease" [] := 299.00000000 "cfs";
-
-    END
-    UUID "{261a0bec-0595-42e2-8e21-90ce34bd284a}";;
-
-    RULE                 "CalculateMinReleaseByElevation";
+    RULE                 "Set Series Min Release";
     DESCRIPTION          "This used to set min release by pool elevation, but now it sets min release based on if we are running min/most/max.  Ideally the min release would either be consistent no matter what, or would be based on the forecast.<br><br>Typically we don't release as low as 250 cfs unless it looks like we are getting close to shortage, but 300 is a pretty normal min most of the time. I put 400 for the max probable.<br><br>";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 2.00000000;
     NOTES                "";
     BEGIN
 
-      $ "NavajoData.SeriesMinRelease" [] := IF ( @"t" == @"Start Timestep" )
+      $ "NavajoData.SeriesMinRelease" [] := IF ( "SummerBaseflowSeason"(  ) )
  THEN
-  299.00000000 "cfs"
+  499.00000000 "cfs"
  ELSE
-  "MinReleaseFunction"(  )
+  299.00000000 "cfs"
  ENDIF;
 
     END
@@ -1944,7 +1931,7 @@ BEGIN
     NOTES          "";
     BEGIN
 
-      @"t" <= @"September 30" AND @"t" >= @"June 1";
+      @"t" <= @"September 30" AND @"t" >= @"July 15";
 
     END
     UUID "{4f3d0b9d-fd0a-4778-bf28-b3819ea5e2b7}";;
