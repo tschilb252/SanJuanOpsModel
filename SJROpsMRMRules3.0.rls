@@ -1,5 +1,5 @@
-# RiverWare_Ruleset 9.0.1 Patch
-# Created 11:42 August 2, 2023
+# RiverWare_Ruleset 9.1.2 Patch
+# Created 10:17 September 8, 2023
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run)";
@@ -286,7 +286,7 @@ BEGIN
     RULE                 "SetSPRbyVolume";
     DESCRIPTION          "this will pick the SPR based on volume. The 288,000 af is the equivalent to a 21-day SPR with 7-day ramp up and 14-day ramp down as rec by SJRIP. This number can be reduced to 0 af if we want to have the lower range releases as a possibility. SNB  2/2/23<br>";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" );
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND $ "SWITCHES.LongRampTesting" [] == 0.00000000;
   NAMES_COLOR  "#00aa00";
     NOTES                "";
     BEGIN
@@ -303,6 +303,27 @@ BEGIN
 
     END
     UUID "{a7c1cb9d-f003-4b2d-a12e-0f3f83144c22}";;
+
+    RULE                 "SetSPRbyVolume with Long Ramps";
+    DESCRIPTION          "this will pick the SPR based on volume. The 288,000 af is the equivalent to a 21-day SPR with 7-day ramp up and 14-day ramp down as rec by SJRIP. This number can be reduced to 0 af if we want to have the lower range releases as a possibility. SNB  2/2/23<br>";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND $ "SWITCHES.LongRampTesting" [] == 1.00000000;
+  NAMES_COLOR  "#00aa00";
+    NOTES                "";
+    BEGIN
+
+      $ "NavajoData.Cycle3SpringPeakRelease" [] := IF ( "SpringPeakReleaseSeason"(  ) )
+ THEN
+  IF ( $ "NavajoData.Cycle3AvailableWater" [@"t"] > $ "NavajoData.MinSPRVolumeConsidered" [] )
+  THEN
+   $ "NavajoData.SPRTables Low Range_byVolume_LongRamps" [@"t", $ "NavajoData.Cycle3AvailableWater" [@"t"]]
+  ELSE
+   $ "NavajoData.SPRTables Low Range_byVolume" [@"t", 0.00000000 "acre-feet"]
+  ENDIF
+ ENDIF;
+
+    END
+    UUID "{efa71347-3719-4cd1-a6ac-e9cfd116b1c5}";;
 
     RULE                 "CalcMaxDaysAtPeak";
     DESCRIPTION          "This rule takes the AW and subtracts an appx 7-day ramp-up volume over base, and a 12-day ramp-down volume over base. Then it divdes the remainder by the volume of a single peak day over base. This returns the total number of days we will run at 5,000 cfs.  In the end, it may be +/- a day or two.<br><br>Doesn't need to be a round number since we're using tables.<br><br>Change the 50,000 number if changing the # of ramping days, and point to the correct SPR ramp table.<br>3-day:18,000<br>7-day: 42,000<br>10-day: 61,000<br><br>Ramp-down (12-days): 65,000";
