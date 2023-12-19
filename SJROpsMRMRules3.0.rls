@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 9.1.2 Patch
-# Created 15:43 October 19, 2023
+# Created 15:30 December 14, 2023
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run)";
@@ -1129,26 +1129,38 @@ BEGIN
     END
     UUID "{b37fff0b-1ff5-4d6c-afe5-134d6dc164d2}";;
 
-    RULE                 "SetWinterRelease";
+    RULE                 "Minimum Release - CWCB Donation Agreement";
     DESCRIPTION          "";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND "CWCB Donation Agreement Season"(  );
     NOTES                "";
     BEGIN
 
-      $ "Vallecito Reservoir.Outflow" [] := IF ( "Winter Storage Season"(  ) )
+      $ "Vallecito Reservoir.Outflow" [] := IF ( $ "Vallecito Reservoir.Storage" [@"t - 1"] <= 60000.00000000 "acre-ft" )
  THEN
-  "Max"( "VolumeToFlow"( ( ( $ "Vallecito Reservoir.Storage" [@"t - 1"] + "Remaining Winter Inflow Volume"( % "Vallecito Reservoir" ) ) - $ "VallecitoData.MaxWinterStorage" [] ) / "DaysUntilEndOfWinterStorage"(  ), @"t" ), $ "Vallecito Reservoir.Outflow" [] )
+  5.00000000 "cfs"
+ ELSE
+  IF ( $ "Vallecito Reservoir.Storage" [@"t - 1"] > 60000.00000000 "acre-ft" )
+  THEN
+   25.00000000 "cfs"
+  ELSE
+   IF ( $ "Vallecito Reservoir.Storage" [@"t - 1"] > 100000.00000000 "acre-ft" )
+   THEN
+    50.00000000 "cfs"
+   ELSE
+    7.00000000 "cfs"
+   ENDIF
+  ENDIF
  ENDIF;
 
     END
-    UUID "{45319a27-0899-4b74-88fa-431d555297da}";;
+    UUID "{b510eb41-7899-4388-a222-aa5dd963ab3f}";;
 
-    RULE                 "SetMinReleaseThisYear";
+    RULE                 "SetMinRelease";
     DESCRIPTION          "";
-    ACTIVE               FALSE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" < @"24:00:00 June 1, 2023";
-  NAMES_COLOR  "#aa00ff";
+    ACTIVE               TRUE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
+  NAMES_COLOR  "#0055ff";
     NOTES                "";
     BEGIN
 
@@ -1156,18 +1168,6 @@ BEGIN
 
     END
     UUID "{37bc55ba-eed8-4312-8d24-03c7748beca9}";;
-
-    RULE                 "Minimum Release";
-    DESCRIPTION          "";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
-    NOTES                "";
-    BEGIN
-
-      $ "Vallecito Reservoir.Outflow" [] := $ "VallecitoData.MinimumRelease" [];
-
-    END
-    UUID "{b510eb41-7899-4388-a222-aa5dd963ab3f}";;
 
   END
   UUID "{f97454dd-7315-4849-93b7-36f3de14d2c5}";;
@@ -1671,6 +1671,21 @@ BEGIN
     END
     UUID "{9f7f1154-c8f9-4b55-91e8-d480753b4bfb}";;
 
+    RULE                 "SetWinterRelease";
+    DESCRIPTION          "";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000;
+    NOTES                "";
+    BEGIN
+
+      $ "Vallecito Reservoir.Outflow" [] := IF ( "Winter Storage Season"(  ) )
+ THEN
+  "Max"( "VolumeToFlow"( ( ( $ "Vallecito Reservoir.Storage" [@"t - 1"] + "Remaining Winter Inflow Volume"( % "Vallecito Reservoir" ) ) - $ "VallecitoData.MaxWinterStorage" [] ) / "DaysUntilEndOfWinterStorage"(  ), @"t" ), $ "Vallecito Reservoir.Outflow" [] )
+ ENDIF;
+
+    END
+    UUID "{45319a27-0899-4b74-88fa-431d555297da}";;
+
   END
   UUID "{7073a789-d8ef-439a-ae1a-08e65b321426}";;
 
@@ -1694,6 +1709,21 @@ BEGIN
 
     END
     UUID "{fda531a5-a651-4be6-a2d8-280a1361d3f0}";;
+
+    FUNCTION       "CWCB Donation Agreement Season" (  )
+    RETURN_TYPE    BOOLEAN;
+    SCALE_UNITS    "";
+    DESCRIPTION    "";
+    ACTIVE         TRUE;
+    PRE_EXEC_DIAG  FALSE;
+    POST_EXEC_DIAG FALSE;
+    NOTES          "";
+    BEGIN
+
+      @"t" > @"September 30" OR @"t" < @"May 10";
+
+    END
+    UUID "{b18eede1-56f3-4e5f-89c4-e7dbedd0bf1d}";;
 
     FUNCTION       "Vallecito Irrigation Season" (  )
     RETURN_TYPE    BOOLEAN;
