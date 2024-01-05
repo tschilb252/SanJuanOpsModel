@@ -1,5 +1,5 @@
 # RiverWare_Ruleset 9.1.2 Patch
-# Created 15:30 December 14, 2023
+# Created 15:23 January 4, 2024
 # 
 RULESET
 NAME "RBS Ruleset (from MRM run)";
@@ -124,7 +124,7 @@ BEGIN
 
     RULE                 "DROA Water";
     DESCRIPTION          "For Chris and Wayne's flex analysis. Try moving<br>20kaf<br>50kaf<br>100 kaf<br>Until a shortage occurs.<br><br>";
-    ACTIVE               FALSE;
+    ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 3.00000000 AND $ "SWITCHES.DROA" [] == 1.00000000;
   NAMES_COLOR  "#55aa00";
     NOTES                "";
@@ -178,7 +178,7 @@ BEGIN
     END
     UUID "{778a22ff-f1f1-48a0-8f94-fe975a952c7a}";;
 
-    RULE                 "IncrementRelease_Simple";
+    RULE                 "IncrementRelease";
     DESCRIPTION          "This rule increments the release into blocks (accounts for gate curve, min resolution of changes)<br>8/2/2018- updated to use &quot;249cfs&quot; instead of min release function<br>";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 3.00000000 AND NOT "HasRuleFiredSuccessfully"( "ThisRule" );
@@ -781,7 +781,7 @@ BEGIN
     END
     UUID "{6ad2f5cb-ca06-45ae-8160-c651fee901d8}";;
 
-    RULE                 "Irrigation Release- NEW- no scaling, just ends";
+    RULE                 "Irrigation Release";
     DESCRIPTION          "";
     ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 1.00000000;
@@ -795,81 +795,6 @@ BEGIN
 
     END
     UUID "{347fb9ef-9b26-4db8-bfb3-f3d4abe582a5}";;
-
-    RULE                 "Irrigation Release";
-    DESCRIPTION          "";
-    ACTIVE               FALSE;
-    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 1.00000000;
-  NAMES_COLOR  "#00aa00";
-    NOTES                "";
-    BEGIN
-
-      $ "Lemon Reservoir.Outflow" [] := IF ( "Lemon Irrigation Season"(  ) AND $ "Lemon Reservoir.Outflow" [] < $ "LemonData.Downstream Demand" [] )
- THEN
-  $ "LemonData.Downstream Demand" []
- ENDIF;
-
-    END
-    UUID "{0ed23e79-7854-463d-bf43-967c7b7c74e5}";;
-
-    RULE                 "ShowDemandPercentages";
-    DESCRIPTION          "";
-    ACTIVE               FALSE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND NOT "HasRuleFiredSuccessfully"( "Current Rule" ) AND @"t" == @"October 31";
-  NAMES_COLOR  "#00aa00";
-    NOTES                "";
-    BEGIN
-
-      $ "LemonData.DemandPercentages" [] := "Min"( 1.00000000, "SumFlowsToVolume"( $ "Lemon Reservoir.Outflow", @"24:00:00 May 1, Current Year", @"t" ) / "SumFlowsToVolume"( $ "LemonData.MedianDemands", @"24:00:00 May 1, Current Year", @"t" ) );
-
-    END
-    UUID "{0e5c892a-b124-4427-bfa0-b79a440230b0}";;
-
-    RULE                 "SetDownstreamDemands";
-    DESCRIPTION          "";
-    ACTIVE               FALSE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND NOT "HasRuleFiredSuccessfully"( "Current Rule" );
-  NAMES_COLOR  "#00aa00";
-    NOTES                "";
-    BEGIN
-
-      $ "LemonData.Downstream Demand" [] := IF ( @"t" == @"November 1" )
- THEN
-  $ "LemonData.Downstream Demand" [@"t - 1"]
- ELSE
-  IF ( "Lemon Irrigation Season"(  ) )
-  THEN
-   "Max"( IF ( "CalculateAvailableIrrigationVolume"( % "Lemon Reservoir", $ "Lemon Reservoir.Inflow", $ "Lemon Reservoir.Storage", $ "LemonData.MinEOYStorage", $ "Lemon Reservoir.Evaporation" ) > $ "LemonData.MedianDemandsVolRemaining" [] )
-   THEN
-    $ "LemonData.MedianDemands" []
-   ELSE
-    IF ( "CalculateAvailableIrrigationVolume"( % "Lemon Reservoir", $ "Lemon Reservoir.Inflow", $ "Lemon Reservoir.Storage", $ "LemonData.MinEOYStorage", $ "Lemon Reservoir.Evaporation" ) <= $ "LemonData.MedianDemandsVolRemaining" [] )
-    THEN
-     "CalculateAvailableIrrigationVolume"( % "Lemon Reservoir", $ "Lemon Reservoir.Inflow", $ "Lemon Reservoir.Storage", $ "LemonData.MinEOYStorage", $ "Lemon Reservoir.Evaporation" ) / $ "LemonData.MedianDemandsVolRemaining" [] * $ "LemonData.MedianDemands" []
-    ELSE
-     1.00000000 "cfs"
-    ENDIF
-   ENDIF, 1.00000000 "cfs" )
-  ELSE
-   1.00000000 "cfs"
-  ENDIF
- ENDIF;
-
-    END
-    UUID "{6ae66d11-6404-40f5-89a1-2bc7c90b8fb9}";;
-
-    RULE                 "MinRelease_Winter";
-    DESCRIPTION          "";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" <= @"24:00:00 October 1, 2023";
-  NAMES_COLOR  "#ff0000";
-    NOTES                "";
-    BEGIN
-
-      $ "Lemon Reservoir.Outflow" [] := 6.00000000 "cfs";
-
-    END
-    UUID "{5a181fc1-d6be-4058-ab9f-31099803a3ba}";;
 
     RULE                 "Minimum Release";
     DESCRIPTION          "";
@@ -1040,16 +965,16 @@ BEGIN
     END
     UUID "{a1adcabb-ea44-4c03-8eb2-cfaa840b6387}";;
 
-    RULE                 "Deadpool";
+    RULE                 "MinEOYStorage";
     DESCRIPTION          "";
     ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT TRUE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND NOT "HasRuleFiredSuccessfully"( "Current Rule" );
     NOTES                "";
     BEGIN
 
       $ "Vallecito Reservoir.Outflow" [] := IF ( $ "Vallecito Reservoir.Storage" [] < $ "VallecitoData.MinEOYStorage" [] )
  THEN
-  $ "VallecitoData.MinimumRelease" []
+  "Min"( $ "Vallecito Reservoir.Inflow" [], $ "VallecitoData.MedianDemands" [] )
  ENDIF;
 
     END
@@ -1062,57 +987,13 @@ BEGIN
     NOTES                "";
     BEGIN
 
-      $ "Vallecito Reservoir.Outflow" [] := IF ( "Vallecito Irrigation Season"(  ) AND $ "Vallecito Reservoir.Outflow" [] < $ "VallecitoData.Downstream Demand" [] )
+      $ "Vallecito Reservoir.Outflow" [] := IF ( "Vallecito Irrigation Season"(  ) AND $ "Vallecito Reservoir.Outflow" [] < $ "VallecitoData.MedianDemands" [] )
  THEN
-  $ "VallecitoData.Downstream Demand" []
+  $ "VallecitoData.MedianDemands" []
  ENDIF;
 
     END
     UUID "{d40b52d7-43ba-4ec3-aabd-13d154b2d9f8}";;
-
-    RULE                 "ShowDemandPercentages";
-    DESCRIPTION          "";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND NOT "HasRuleFiredSuccessfully"( "Current Rule" ) AND @"t" == @"October 31";
-    NOTES                "";
-    BEGIN
-
-      $ "VallecitoData.DemandPercentages" [] := "Min"( 1.00000000, "SumFlowsToVolume"( $ "Vallecito Reservoir.Outflow", @"24:00:00 May 9, Current Year", @"t" ) / "SumFlowsToVolume"( $ "VallecitoData.MedianDemands", @"24:00:00 May 9, Current Year", @"t" ) );
-
-    END
-    UUID "{959fbe3c-2803-48e0-aa02-525baafdccc4}";;
-
-    RULE                 "SetDownstreamDemands";
-    DESCRIPTION          "";
-    ACTIVE               TRUE;
-    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND NOT "HasRuleFiredSuccessfully"( "Current Rule" );
-    NOTES                "";
-    BEGIN
-
-      $ "VallecitoData.Downstream Demand" [] := IF ( @"t" == @"November 1" )
- THEN
-  $ "VallecitoData.Downstream Demand" [@"t - 1"]
- ELSE
-  IF ( "Vallecito Irrigation Season"(  ) )
-  THEN
-   "Max"( IF ( "CalculateAvailableIrrigationVolume"( % "Vallecito Reservoir", $ "Vallecito Reservoir.Inflow", $ "Vallecito Reservoir.Storage", $ "VallecitoData.MinEOYStorage", $ "Vallecito Reservoir.Evaporation" ) > $ "VallecitoData.MedianDemandsVolRemaining" [] )
-   THEN
-    $ "VallecitoData.MedianDemands" []
-   ELSE
-    IF ( "CalculateAvailableIrrigationVolume"( % "Vallecito Reservoir", $ "Vallecito Reservoir.Inflow", $ "Vallecito Reservoir.Storage", $ "VallecitoData.MinEOYStorage", $ "Vallecito Reservoir.Evaporation" ) <= $ "VallecitoData.MedianDemandsVolRemaining" [] )
-    THEN
-     "CalculateAvailableIrrigationVolume"( % "Vallecito Reservoir", $ "Vallecito Reservoir.Inflow", $ "Vallecito Reservoir.Storage", $ "VallecitoData.MinEOYStorage", $ "Vallecito Reservoir.Evaporation" ) / $ "VallecitoData.MedianDemandsVolRemaining" [] * $ "VallecitoData.MedianDemands" []
-    ELSE
-     1.00000000 "cfs"
-    ENDIF
-   ENDIF, 1.00000000 "cfs" )
-  ELSE
-   1.00000000 "cfs"
-  ENDIF
- ENDIF;
-
-    END
-    UUID "{802d2d47-a098-4d1d-9559-673cc19d978f}";;
 
     RULE                 "WinterStorageLimit";
     DESCRIPTION          "Set release such that reservoir storage is less than or equal to 77,000 af.  This is to keep reservoir elevation below the bottom of radial gates during icing season.";
@@ -1131,25 +1012,20 @@ BEGIN
 
     RULE                 "Minimum Release - CWCB Donation Agreement";
     DESCRIPTION          "";
-    ACTIVE               FALSE;
+    ACTIVE               TRUE;
     RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND "CWCB Donation Agreement Season"(  );
     NOTES                "";
     BEGIN
 
       $ "Vallecito Reservoir.Outflow" [] := IF ( $ "Vallecito Reservoir.Storage" [@"t - 1"] <= 60000.00000000 "acre-ft" )
  THEN
-  5.00000000 "cfs"
+  7.00000000 "cfs"
  ELSE
-  IF ( $ "Vallecito Reservoir.Storage" [@"t - 1"] > 60000.00000000 "acre-ft" )
+  IF ( $ "Vallecito Reservoir.Storage" [@"t - 1"] > 100000.00000000 "acre-ft" )
   THEN
-   25.00000000 "cfs"
+   50.00000000 "cfs"
   ELSE
-   IF ( $ "Vallecito Reservoir.Storage" [@"t - 1"] > 100000.00000000 "acre-ft" )
-   THEN
-    50.00000000 "cfs"
-   ELSE
-    7.00000000 "cfs"
-   ENDIF
+   25.00000000 "cfs"
   ENDIF
  ENDIF;
 
@@ -1164,7 +1040,7 @@ BEGIN
     NOTES                "";
     BEGIN
 
-      $ "Vallecito Reservoir.Outflow" [] := 5.00000000 "cfs";
+      $ "Vallecito Reservoir.Outflow" [] := $ "VallecitoData.MinimumRelease" [];
 
     END
     UUID "{37bc55ba-eed8-4312-8d24-03c7748beca9}";;
@@ -1685,6 +1561,125 @@ BEGIN
 
     END
     UUID "{45319a27-0899-4b74-88fa-431d555297da}";;
+
+    RULE                 "Irrigation Release";
+    DESCRIPTION          "";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 1.00000000;
+  NAMES_COLOR  "#00aa00";
+    NOTES                "";
+    BEGIN
+
+      $ "Lemon Reservoir.Outflow" [] := IF ( "Lemon Irrigation Season"(  ) AND $ "Lemon Reservoir.Outflow" [] < $ "LemonData.Downstream Demand" [] )
+ THEN
+  $ "LemonData.Downstream Demand" []
+ ENDIF;
+
+    END
+    UUID "{0ed23e79-7854-463d-bf43-967c7b7c74e5}";;
+
+    RULE                 "ShowDemandPercentages";
+    DESCRIPTION          "";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND NOT "HasRuleFiredSuccessfully"( "Current Rule" ) AND @"t" == @"October 31";
+  NAMES_COLOR  "#00aa00";
+    NOTES                "";
+    BEGIN
+
+      $ "LemonData.DemandPercentages" [] := "Min"( 1.00000000, "SumFlowsToVolume"( $ "Lemon Reservoir.Outflow", @"24:00:00 May 1, Current Year", @"t" ) / "SumFlowsToVolume"( $ "LemonData.MedianDemands", @"24:00:00 May 1, Current Year", @"t" ) );
+
+    END
+    UUID "{0e5c892a-b124-4427-bfa0-b79a440230b0}";;
+
+    RULE                 "SetDownstreamDemands";
+    DESCRIPTION          "";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND NOT "HasRuleFiredSuccessfully"( "Current Rule" );
+  NAMES_COLOR  "#00aa00";
+    NOTES                "";
+    BEGIN
+
+      $ "LemonData.Downstream Demand" [] := IF ( @"t" == @"November 1" )
+ THEN
+  $ "LemonData.Downstream Demand" [@"t - 1"]
+ ELSE
+  IF ( "Lemon Irrigation Season"(  ) )
+  THEN
+   "Max"( IF ( "CalculateAvailableIrrigationVolume"( % "Lemon Reservoir", $ "Lemon Reservoir.Inflow", $ "Lemon Reservoir.Storage", $ "LemonData.MinEOYStorage", $ "Lemon Reservoir.Evaporation" ) > $ "LemonData.MedianDemandsVolRemaining" [] )
+   THEN
+    $ "LemonData.MedianDemands" []
+   ELSE
+    IF ( "CalculateAvailableIrrigationVolume"( % "Lemon Reservoir", $ "Lemon Reservoir.Inflow", $ "Lemon Reservoir.Storage", $ "LemonData.MinEOYStorage", $ "Lemon Reservoir.Evaporation" ) <= $ "LemonData.MedianDemandsVolRemaining" [] )
+    THEN
+     "CalculateAvailableIrrigationVolume"( % "Lemon Reservoir", $ "Lemon Reservoir.Inflow", $ "Lemon Reservoir.Storage", $ "LemonData.MinEOYStorage", $ "Lemon Reservoir.Evaporation" ) / $ "LemonData.MedianDemandsVolRemaining" [] * $ "LemonData.MedianDemands" []
+    ELSE
+     1.00000000 "cfs"
+    ENDIF
+   ENDIF, 1.00000000 "cfs" )
+  ELSE
+   1.00000000 "cfs"
+  ENDIF
+ ENDIF;
+
+    END
+    UUID "{6ae66d11-6404-40f5-89a1-2bc7c90b8fb9}";;
+
+    RULE                 "MinRelease_Winter";
+    DESCRIPTION          "";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT NOT "HasRuleFiredSuccessfully"( "ThisRule" ) AND "GetRunCycleIndex"(  ) == 1.00000000 AND @"t" <= @"24:00:00 October 1, 2023";
+  NAMES_COLOR  "#ff0000";
+    NOTES                "";
+    BEGIN
+
+      $ "Lemon Reservoir.Outflow" [] := 6.00000000 "cfs";
+
+    END
+    UUID "{5a181fc1-d6be-4058-ab9f-31099803a3ba}";;
+
+    RULE                 "ShowDemandPercentages1";
+    DESCRIPTION          "";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND NOT "HasRuleFiredSuccessfully"( "Current Rule" ) AND @"t" == @"October 31";
+    NOTES                "";
+    BEGIN
+
+      $ "VallecitoData.DemandPercentages" [] := "Min"( 1.00000000, "SumFlowsToVolume"( $ "Vallecito Reservoir.Outflow", @"24:00:00 May 9, Current Year", @"t" ) / "SumFlowsToVolume"( $ "VallecitoData.MedianDemands", @"24:00:00 May 9, Current Year", @"t" ) );
+
+    END
+    UUID "{959fbe3c-2803-48e0-aa02-525baafdccc4}";;
+
+    RULE                 "SetDownstreamDemands1";
+    DESCRIPTION          "";
+    ACTIVE               FALSE;
+    RULE_EXEC_CONSTRAINT "GetRunCycleIndex"(  ) == 1.00000000 AND NOT "HasRuleFiredSuccessfully"( "Current Rule" );
+    NOTES                "";
+    BEGIN
+
+      $ "VallecitoData.Downstream Demand" [] := IF ( @"t" == @"November 1" )
+ THEN
+  $ "VallecitoData.Downstream Demand" [@"t - 1"]
+ ELSE
+  IF ( "Vallecito Irrigation Season"(  ) )
+  THEN
+   "Max"( IF ( "CalculateAvailableIrrigationVolume"( % "Vallecito Reservoir", $ "Vallecito Reservoir.Inflow", $ "Vallecito Reservoir.Storage", $ "VallecitoData.MinEOYStorage", $ "Vallecito Reservoir.Evaporation" ) > $ "VallecitoData.MedianDemandsVolRemaining" [] )
+   THEN
+    $ "VallecitoData.MedianDemands" []
+   ELSE
+    IF ( "CalculateAvailableIrrigationVolume"( % "Vallecito Reservoir", $ "Vallecito Reservoir.Inflow", $ "Vallecito Reservoir.Storage", $ "VallecitoData.MinEOYStorage", $ "Vallecito Reservoir.Evaporation" ) <= $ "VallecitoData.MedianDemandsVolRemaining" [] )
+    THEN
+     "CalculateAvailableIrrigationVolume"( % "Vallecito Reservoir", $ "Vallecito Reservoir.Inflow", $ "Vallecito Reservoir.Storage", $ "VallecitoData.MinEOYStorage", $ "Vallecito Reservoir.Evaporation" ) / $ "VallecitoData.MedianDemandsVolRemaining" [] * $ "VallecitoData.MedianDemands" []
+    ELSE
+     1.00000000 "cfs"
+    ENDIF
+   ENDIF, 1.00000000 "cfs" )
+  ELSE
+   1.00000000 "cfs"
+  ENDIF
+ ENDIF;
+
+    END
+    UUID "{802d2d47-a098-4d1d-9559-673cc19d978f}";;
 
   END
   UUID "{7073a789-d8ef-439a-ae1a-08e65b321426}";;
